@@ -16,7 +16,7 @@ import Settings from "@screens/Settings";
 import Unlock from "@screens/Unlock";
 import ChooseConnector from "@screens/connectors/ChooseConnector";
 import { useTranslation } from "react-i18next";
-import { HashRouter, Navigate, Outlet, Routes, Route } from "react-router-dom";
+import { HashRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Providers from "~/app/context/Providers";
 import RequireAuth from "~/app/router/RequireAuth";
