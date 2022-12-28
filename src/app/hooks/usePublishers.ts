@@ -8,6 +8,7 @@ let PERSISTED_PUBLISHERS = [] as Publisher[];
 type State = {
   publishers: Publisher[];
   isLoading: boolean;
+  error?: string;
 };
 
 export const usePublishers = (): State => {
@@ -21,7 +22,6 @@ export const usePublishers = (): State => {
       const allowanceResponse = await msg.request<{
         allowances: Allowance[];
       }>("listAllowances");
-      // setIsLoading(true);
       const allowances: Publisher[] = allowanceResponse.allowances.reduce<
         Publisher[]
       >((acc, allowance) => {
@@ -79,7 +79,16 @@ export const usePublishers = (): State => {
       PERSISTED_PUBLISHERS = allowances;
     } catch (e) {
       console.error(e);
-      if (e instanceof Error) toast.error(`Error: ${e.message}`);
+      let message: string;
+      if (e instanceof Error) {
+        message = e.message;
+        toast.error(`Error: ${message}`);
+      }
+      setState((existingState) => ({
+        ...existingState,
+        isLoading: false,
+        error: message,
+      }));
     }
   }
 
