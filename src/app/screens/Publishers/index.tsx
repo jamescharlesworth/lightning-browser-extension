@@ -16,7 +16,7 @@ function Publishers() {
     keyPrefix: "publishers",
   });
 
-  const { publishers } = usePublishers();
+  const { data: publishers = [] } = usePublishers();
 
   // const { account } = useAccount();
   const { settings, updateSetting } = useSettings();

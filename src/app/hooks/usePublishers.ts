@@ -1,23 +1,10 @@
-import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import useSWR, { Fetcher, Key } from "swr";
 import msg from "~/common/lib/msg";
 import { Allowance, Badge, Publisher } from "~/types";
 
-let PERSISTED_PUBLISHERS = [] as Publisher[];
-
-type State = {
-  publishers: Publisher[];
-  isLoading: boolean;
-  error?: string;
-};
-
-export const usePublishers = (): State => {
-  const [state, setState] = useState<State>({
-    publishers: PERSISTED_PUBLISHERS,
-    isLoading: true,
-  });
-
-  async function fetchData() {
+export const usePublishers = () => {
+  const fetcher: Fetcher<Publisher[]> = async () => {
     try {
       const allowanceResponse = await msg.request<{
         allowances: Allowance[];
@@ -72,29 +59,16 @@ export const usePublishers = (): State => {
         return acc;
       }, []);
 
-      setState({
-        publishers: allowances,
-        isLoading: false,
-      });
-      PERSISTED_PUBLISHERS = allowances;
+      return allowances;
     } catch (e) {
       console.error(e);
-      let message: string;
       if (e instanceof Error) {
-        message = e.message;
-        toast.error(`Error: ${message}`);
+        toast.error(`Error: ${e.message}`);
+        throw e;
       }
-      setState((existingState) => ({
-        ...existingState,
-        isLoading: false,
-        error: message,
-      }));
+      return [];
     }
-  }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  return state;
+  };
+  const key: Key = "publishers";
+  return useSWR(key, fetcher);
 };
