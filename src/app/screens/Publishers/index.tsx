@@ -1,13 +1,10 @@
 import Container from "@components/Container";
 import PublishersTable from "@components/PublishersTable";
 import Tips from "@components/Tips";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { usePublishers } from "~/app/hooks/usePublishers";
 import { useTips } from "~/app/hooks/useTips";
-import msg from "~/common/lib/msg";
-import { Allowance, Badge, Publisher } from "~/types";
 
 import websites from "./websites.json";
 
@@ -16,7 +13,7 @@ function Publishers() {
     keyPrefix: "publishers",
   });
 
-  const [publishers, setPublishers] = useState<Publisher[]>([]);
+  const { data: publishers = [] } = usePublishers();
   const { tips } = useTips();
 
   const hasTips = tips.length > 0;
@@ -26,73 +23,6 @@ function Publishers() {
   function navigateToPublisher(id: number) {
     navigate(`/publishers/${id}`);
   }
-
-  async function fetchData() {
-    try {
-      const allowanceResponse = await msg.request<{
-        allowances: Allowance[];
-      }>("listAllowances");
-
-      const allowances: Publisher[] = allowanceResponse.allowances.reduce<
-        Publisher[]
-      >((acc, allowance) => {
-        if (!allowance?.id || !allowance.enabled) return acc;
-
-        const {
-          id,
-          host,
-          imageURL,
-          name,
-          payments,
-          paymentsAmount,
-          paymentsCount,
-          percentage,
-          totalBudget,
-          usedBudget,
-        } = allowance;
-
-        const badges: Badge[] = [];
-        if (allowance.remainingBudget > 0) {
-          badges.push({
-            label: "active",
-            color: "green-bitcoin",
-            textColor: "white",
-          });
-        }
-        if (allowance.lnurlAuth) {
-          badges.push({
-            label: "auth",
-            color: "green-bitcoin",
-            textColor: "white",
-          });
-        }
-        acc.push({
-          id,
-          host,
-          imageURL,
-          name,
-          payments,
-          paymentsAmount,
-          paymentsCount,
-          percentage,
-          totalBudget,
-          usedBudget,
-          badges,
-        });
-
-        return acc;
-      }, []);
-
-      setPublishers(allowances);
-    } catch (e) {
-      console.error(e);
-      if (e instanceof Error) toast.error(`Error: ${e.message}`);
-    }
-  }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   return (
     <Container>
